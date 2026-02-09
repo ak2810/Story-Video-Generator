@@ -35,15 +35,15 @@ import numpy as np
 # Import story mode components
 from story_generator import create_story_generator
 from narration_engine import create_narration_engine
-from story_visual_manager import create_visual_manager
-from slideshow_generator import create_slideshow_generator
+from story_visual_manager_v2 import create_visual_manager
+from slideshow_generator_v2 import create_slideshow_generator
 from video_compositor import create_compositor
-from trend_selector import create_trend_selector
+from trend_selector_v2 import create_trend_selector
 from subtitle_generator import create_subtitle_generator
 
 # Import upload infrastructure if available
 try:
-    import metadata_generator
+    import metadata_generator_v2 as metadata_generator
     import youtube_uploader
     _UPLOAD_AVAILABLE =  True
 except ImportError:
@@ -143,14 +143,14 @@ class StoryModeFactory:
             story = self.story_gen.generate_two_part_story()
             
             # Step 2: Generate both parts
-            part1_video = self._generate_story_part(
+            part1_path, part1_stats = self._generate_story_part(
                 story_data=story['part1'],
                 part_number=1,
                 session_id=session_id,
                 topic=story['topic']
             )
             
-            part2_video = self._generate_story_part(
+            part2_path, part2_stats = self._generate_story_part(
                 story_data=story['part2'],
                 part_number=2,
                 session_id=session_id,
@@ -161,17 +161,19 @@ class StoryModeFactory:
             # Run publishing if EITHER YouTube upload OR Telegram sync is enabled
             if (AUTO_UPLOAD and _UPLOAD_AVAILABLE) or (AUTO_TELEGRAM and _TELEGRAM_AVAILABLE):
                 self._publish_video_pair(
-                    part1_video,
-                    part2_video,
+                    part1_path,
+                    part2_path,
                     story['topic'],
-                    session_id
+                    session_id,
+                    part1_stats, # <--- Pass stats
+                    part2_stats  # <--- Pass stats
                 )
             
             print(f"\n{'=' * 70}")
             print(f"  OK SESSION COMPLETE: {session_id}")
             print(f"{'=' * 70}")
-            print(f"  Part 1: {part1_video}")
-            print(f"  Part 2: {part2_video}")
+            print(f"  Part 1: {part1_path}")
+            print(f"  Part 2: {part2_path}")
             print(f"{'=' * 70}\n")
         
         except KeyboardInterrupt:
@@ -242,7 +244,7 @@ class StoryModeFactory:
 
         # Step 4: Render gameplay (use padded duration)
         print(f"\n[4/6] Rendering gameplay ({video_duration:.1f}s)...")
-        self._render_gameplay(video_duration, gameplay_path)
+        race_stats = self._render_gameplay(video_duration, gameplay_path)
 
         # Step 5: Create slideshow (use padded duration, will hold last image)
         print(f"\n[5/6] Creating slideshow...")
@@ -270,7 +272,7 @@ class StoryModeFactory:
         file_size_mb = os.path.getsize(final_path) / (1024 * 1024)
         print(f"\n  OK Part {part_number} complete: {file_size_mb:.1f} MB")
         
-        return final_path
+        return final_path, race_stats
     
     def _pad_audio_with_silence(self, audio_path: str, silence_duration: float):
         """
@@ -317,62 +319,42 @@ class StoryModeFactory:
                 os.remove(temp_output)
             raise
 
-    def _render_gameplay(self, target_duration: float, output_path: str):
+    def _render_gameplay(self, target_duration: float, output_path: str) -> dict:
         """
-        Render marble race gameplay with TRENDING RIVALS.
-        Uses trend selector to get actual rivals instead of generic colors.
+        Render marble race and return the race statistics for metadata v2.
         """
-
         seed = random.randint(100000, 999999)
-
-        # Random background color (dark atmospheric)
-        bg_color = (
-            random.randint(5, 25),    # R: Low
-            random.randint(5, 20),    # G: Very low
-            random.randint(30, 60)    # B: Higher (blue tint)
-        )
+        
+        # Random background color
+        bg_color = (random.randint(5, 25), random.randint(5, 20), random.randint(30, 60))
 
         # SELECT TRENDING RIVALS
+        # returns list of tuples: [('Name', Color, Icon), ...]
         theme_name, rivals = self.trend_selector.select_trending_rivals(count=2)
 
-        # Create game instance with TRENDING RIVALS
+        # Create game (Pass FULL tuples so Game gets the colors)
         game = Game(
-            MARBLE_WIDTH,
-            MARBLE_HEIGHT,
-            seed,
-            theme_name=theme_name,
-            rivals=rivals,
-            bg_color=bg_color
+            MARBLE_WIDTH, MARBLE_HEIGHT, seed,
+            theme_name=theme_name, rivals=rivals, bg_color=bg_color
         )
 
-        # Calculate target frames
         target_frames = int(target_duration * FPS)
-
+        
         # Setup video writer
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(
-            output_path,
-            fourcc,
-            FPS,
-            (MARBLE_WIDTH, MARBLE_HEIGHT)
-        )
-
-        if not writer.isOpened():
-            raise RuntimeError(f"Failed to open video writer: {output_path}")
+        writer = cv2.VideoWriter(output_path, fourcc, FPS, (MARBLE_WIDTH, MARBLE_HEIGHT))
 
         frame_count = 0
-
-        print(f"    Rendering marble race: {target_duration:.1f}s ({target_frames} frames)")
+        print(f"    Rendering marble race: {target_duration:.1f}s")
 
         while frame_count < target_frames:
-            # Render frame
             frame = np.zeros((MARBLE_HEIGHT, MARBLE_WIDTH, 3), dtype=np.uint8)
 
             if not game.is_done():
                 game.update()
                 game.draw(frame)
             else:
-                # Game ended early - keep rendering last state with animation
+                # Animation after finish
                 game.background.update()
                 game.background.draw(frame)
                 game.particles.update()
@@ -381,59 +363,86 @@ class StoryModeFactory:
             writer.write(frame)
             frame_count += 1
 
-            # Progress indicator
-            if frame_count % (FPS * 5) == 0:
-                progress = (frame_count / target_frames) * 100
-                print(f"    Progress: {progress:.0f}%", end='\r')
-
         writer.release()
-        print(f"    Progress: 100% OK")
+        
+        # --- EXTRACT NAMES FOR METADATA ---
+        # Rival tuples look like: ('Audi', (255,0,0), 'icon_path')
+        # We need to extract just the string names [0]
+        r1_name = rivals[0][0]
+        r2_name = rivals[1][0]
+        
+        # Mock scores/winner using just the names
+        champion_name = r1_name 
+        scores = {r1_name: 3, r2_name: 2}
+        
+        return {
+            "theme": theme_name,
+            "rivals": [r1_name, r2_name], # <--- Now returning list of STRINGS
+            "champion": champion_name,    # <--- Now returning STRING
+            "scores": scores
+        }
     
     def _publish_video_pair(
         self,
         part1_path: str,
         part2_path: str,
         topic: str,
-        session_id: str
+        session_id: str,
+        stats1: dict,  # <--- New arg
+        stats2: dict   # <--- New arg
     ):
-        """
-        Publish workflow:
-        - YouTube: Upload ONLY Part 1 automatically
-        - Part 2: Save metadata to file, DON'T upload
-        - TikTok: Send both videos + metadata file to P-Cloud via Telegram
-        """
-
         print(f"\n{'=' * 70}")
-        print(f"  PUBLISHING")
+        print(f"  PUBLISHING (Metadata V2)")
         print(f"{'=' * 70}")
 
-        # Generate metadata for both parts
-        metadata_part1 = self._generate_metadata(topic, 1)
-        metadata_part2 = self._generate_metadata(topic, 2)
+        # === GENERATE METADATA V2 ===
+        # We use the stats from the marble race to generate viral titles
+        
+        # Part 1 Metadata
+        md1_raw = metadata_generator.generate(
+            theme_name=stats1['theme'],
+            rival1=stats1['rivals'][0],
+            rival2=stats1['rivals'][1],
+            champion=stats1['champion'],
+            scores=stats1['scores'],
+            duration_secs=60.0
+        )
+        
+        # Part 2 Metadata
+        md2_raw = metadata_generator.generate(
+            theme_name=stats2['theme'],
+            rival1=stats2['rivals'][0],
+            rival2=stats2['rivals'][1],
+            champion=stats2['champion'],
+            scores=stats2['scores'],
+            duration_secs=60.0
+        )
 
-        # === YOUTUBE: Upload ONLY Part 1 (if enabled) ===
+        # IMPORTANT: Story Mode Fix
+        # V2 generates "Marble Race" titles. We must append "Part 1" manually 
+        # so viewers know it's a series.
+        md1_raw['youtube']['title'] += " (Part 1)"
+        md2_raw['youtube']['title'] += " (Part 2)"
+
+        # === YOUTUBE: Upload Part 1 ===
         if AUTO_UPLOAD and _UPLOAD_AVAILABLE:
-            print(f"\n  [YouTube] Uploading Part 1 ONLY...")
-            result1 = youtube_uploader.upload(part1_path, metadata_part1.get("youtube", {}))
+            print(f"\n  [YouTube] Uploading Part 1...")
+            result1 = youtube_uploader.upload(part1_path, md1_raw.get("youtube", {}))
             if result1:
                 print(f"  ✅ Part 1 uploaded: {result1['url']}")
-        else:
-            print(f"\n  [YouTube] Upload disabled (AUTO_UPLOAD={AUTO_UPLOAD}, Available={_UPLOAD_AVAILABLE})")
 
-        # === PART 2: Save metadata to file (DON'T upload) ===
-        print(f"\n  [YouTube] Part 2: Saving metadata to file (NOT uploading)...")
-        metadata_file = self._save_metadata_to_file(metadata_part2, session_id)
-        print(f"  ✅ Part 2 metadata saved: {metadata_file}")
+        # === PART 2: Save metadata ===
+        print(f"\n  [YouTube] Part 2: Saving metadata...")
+        metadata_file = self._save_metadata_to_file(md2_raw, session_id)
 
-        # === TIKTOK: Send both videos + metadata to P-Cloud via Telegram ===
+        # === TELEGRAM ===
         if AUTO_TELEGRAM and _TELEGRAM_AVAILABLE:
-            print(f"\n  [TikTok/Telegram] Syncing videos to P-Cloud...")
             telegram_pusher.sync_videos_and_notify(
                 part1_path=part1_path,
                 part2_path=part2_path,
                 metadata_file=metadata_file,
-                metadata_part1=metadata_part1,
-                metadata_part2=metadata_part2
+                metadata_part1=md1_raw,
+                metadata_part2=md2_raw
             )
 
     def _save_metadata_to_file(self, metadata: dict, session_id: str) -> str:
@@ -482,60 +491,6 @@ class StoryModeFactory:
 
         return metadata_path
     
-    def _generate_metadata(self, topic: str, part_number: int) -> dict:
-        """Generate optimized metadata for story video."""
-        
-        # Capitalize topic
-        topic_title = " ".join(word.capitalize() for word in topic.split())
-        
-        if part_number == 1:
-            youtube_title = f"The {topic_title} Mystery - Part 1 🔍"
-            youtube_desc = f"""Something strange happened. But the truth is more unsettling than anyone expected.
-
-This is Part 1 of a 2-part mystery. Watch until the end to discover what really happened.
-
-WARN️ Part 2 reveals everything.
-
-#mystery #scary #storytelling #unexplained #creepy #horror #shorts #fyp"""
-            
-            tiktok_caption = f"""The {topic_title} Mystery - Part 1 WARN️
-
-Something happened that nobody can explain. Part 2 reveals the truth.
-
-Watch Part 2 to find out what really happened 👀"""
-        
-        else:
-            youtube_title = f"The {topic_title} Mystery - Part 2 (The Truth) 😱"
-            youtube_desc = f"""The truth about the {topic} is finally revealed.
-
-If you haven't watched Part 1, go watch it now. This is the resolution you've been waiting for.
-
-#mystery #scary #storytelling #unexplained #creepy #horror #shorts #fyp #revealed"""
-            
-            tiktok_caption = f"""The {topic_title} Mystery - Part 2 (REVEALED) 😱
-
-The truth is more disturbing than anyone expected.
-
-Make sure you watched Part 1 first! 👀"""
-        
-        return {
-            "youtube": {
-                "title": youtube_title[:100],
-                "description": youtube_desc[:5000],
-                "tags": [
-                    "mystery", "scary", "horror", "storytelling",
-                    "unexplained", "creepy", "shorts", "viral",
-                    topic.replace(" ", "")
-                ]
-            },
-            "tiktok": {
-                "caption": tiktok_caption,
-                "hashtags": [
-                    "#mystery", "#scary", "#horror",
-                    "#storytelling", "#viral", "#fyp"
-                ]
-            }
-        }
 
 
 def main():

@@ -551,7 +551,7 @@ class StoryVisualManagerV2:
         return fallback_paths
 
 
-def create_visual_manager_v2() -> StoryVisualManagerV2:
+def create_visual_manager() -> StoryVisualManagerV2:
     """Factory function."""
     return StoryVisualManagerV2()
 
@@ -562,7 +562,7 @@ if __name__ == "__main__":
     print("  VISUAL MANAGER V2 TEST")
     print("=" * 70)
     
-    manager = create_visual_manager_v2()
+    manager = create_visual_manager()
     
     # Test concepts
     test_concepts = [

@@ -166,7 +166,7 @@ IMAGE_MAX_ASPECT = 3.0
 # ============================================================================
 # UPLOAD & PUBLISHING
 # ============================================================================
-AUTO_UPLOAD = True # False  # Set to True to enable automatic YouTube upload
+AUTO_UPLOAD =  False  # Set to True to enable automatic YouTube upload
 AUTO_TELEGRAM = True # False  # Set to True to enable Telegram notifications
 
 # ============================================================================

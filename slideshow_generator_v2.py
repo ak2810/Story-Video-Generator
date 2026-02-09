@@ -28,15 +28,43 @@ from production_config import (
 
 
 # Motion pattern templates
+# Motion pattern templates
+# FIXES:
+# 1. Replaced 'scale=' with 'z=' (zoom)
+# 2. Removed invalid ':1' parameter
+# 3. Added dynamic math for zoom_in/out (using 'on' for frame count) to actually animate
 MOTION_PATTERNS = [
-    # (name, description, zoompan_filter)
-    ("zoom_in_center", "Slow zoom into center", "scale=1.5:1:d={duration}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"),
-    ("zoom_out_center", "Slow zoom out from center", "scale=1/(1.5-(0.5*on/{duration})):1:d={duration}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"),
-    ("pan_left_to_right", "Pan from left to right", "scale=1.3:1:d={duration}:x='(iw-iw/zoom)*(on/{duration})':y='ih/2-(ih/zoom/2)'"),
-    ("pan_right_to_left", "Pan from right to left", "scale=1.3:1:d={duration}:x='(iw-iw/zoom)*(1-on/{duration})':y='ih/2-(ih/zoom/2)'"),
-    ("diagonal_zoom", "Diagonal zoom and pan", "scale=1.4:1:d={duration}:x='(iw-iw/zoom)*(on/{duration})':y='(ih-ih/zoom)*(on/{duration})'"),
-    ("circular_motion", "Circular camera movement", "scale=1.3:1:d={duration}:x='(iw-iw/zoom)/2+(iw-iw/zoom)/2*sin(2*PI*on/{duration})':y='(ih-ih/zoom)/2+(ih-ih/zoom)/2*cos(2*PI*on/{duration})'"),
-]
+        (
+            "zoom_in_center", 
+            "Slow zoom into center", 
+            "z='min(1.0+0.5*on/{duration},1.5)':d={duration}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
+        ),
+        (
+            "zoom_out_center", 
+            "Slow zoom out from center", 
+            "z='max(1.5-0.5*on/{duration},1.0)':d={duration}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
+        ),
+        (
+            "pan_left_to_right", 
+            "Pan from left to right", 
+            "z=1.3:d={duration}:x='(iw-iw/zoom)*(on/{duration})':y='ih/2-(ih/zoom/2)'"
+        ),
+        (
+            "pan_right_to_left", 
+            "Pan from right to left", 
+            "z=1.3:d={duration}:x='(iw-iw/zoom)*(1-on/{duration})':y='ih/2-(ih/zoom/2)'"
+        ),
+        (
+            "diagonal_zoom", 
+            "Diagonal zoom and pan", 
+            "z='1.2+0.2*on/{duration}':d={duration}:x='(iw-iw/zoom)*(on/{duration})':y='(ih-ih/zoom)*(on/{duration})'"
+        ),
+        (
+            "circular_motion", 
+            "Circular camera movement", 
+            "z=1.3:d={duration}:x='(iw-iw/zoom)/2+(iw-iw/zoom)/2*sin(2*PI*on/{duration})':y='(ih-ih/zoom)/2+(ih-ih/zoom)/2*cos(2*PI*on/{duration})'"
+        ),
+    ]
 
 
 class SlideshowGeneratorV2:
@@ -390,7 +418,7 @@ class SlideshowGeneratorV2:
         ], check=True, capture_output=True)
 
 
-def create_slideshow_generator_v2() -> SlideshowGeneratorV2:
+def create_slideshow_generator() -> SlideshowGeneratorV2:
     """Factory function."""
     return SlideshowGeneratorV2()
 
@@ -401,7 +429,7 @@ if __name__ == "__main__":
     print("  SLIDESHOW GENERATOR V2 TEST")
     print("=" * 70)
     
-    generator = create_slideshow_generator_v2()
+    generator = create_slideshow_generator()
     
     # Create test images
     test_dir = STORY_TEMP_DIR

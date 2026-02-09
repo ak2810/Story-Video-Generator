@@ -334,7 +334,7 @@ class TrendSelectorV2:
         print("  [trends_v2] Session history reset")
 
 
-def create_trend_selector_v2(themes_path: str = "themes.json") -> TrendSelectorV2:
+def create_trend_selector(themes_path: str = "themes.json") -> TrendSelectorV2:
     """Factory function."""
     return TrendSelectorV2(themes_path)
 
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     print("  TREND SELECTOR V2 TEST")
     print("=" * 70)
     
-    selector = create_trend_selector_v2()
+    selector = create_trend_selector()
     
     # Test multiple selections
     for i in range(3):
