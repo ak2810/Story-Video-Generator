@@ -1,0 +1,31 @@
+# ============================================================================
+# AI Story Video Generator - Python Dependencies
+# ============================================================================
+
+# Core dependencies
+opencv-python>=4.8.0
+numpy>=1.24.0
+requests>=2.31.0
+
+# Text-to-Speech (TTS)
+gtts>=2.5.0
+
+# Google API Client (YouTube upload)
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+
+# Telegram Bot
+python-telegram-bot>=20.0
+
+# Image processing & search
+Pillow>=10.0.0
+duckduckgo-search>=3.9.0
+
+# HTTP client utilities
+httpx>=0.25.0
+
+# Optional: Ollama Python client (for LLM story generation)
+# Note: Requires Ollama to be installed and running locally
+# Install: https://ollama.ai/
+# ollama-python>=0.1.0

@@ -1,0 +1,317 @@
+================================================================================
+  STORY VIDEO GENERATOR — PRODUCTION-READY ARCHITECTURE
+================================================================================
+
+PROJECT SUMMARY
+---------------
+Autonomous two-part story video generator with:
+  • LLM-powered story generation (Ollama)
+  • TTS narration (espeak-ng or gTTS)
+  • Safe image fetching (DuckDuckGo + content filters)
+  • Marble race gameplay (synchronized)
+  • Split-screen composition (story + gameplay)
+  • Optional YouTube/Telegram publishing
+
+================================================================================
+WHAT WAS CHANGED (Full Refactoring)
+================================================================================
+
+1. CENTRALIZED CONFIGURATION
+   - Created production_config.py with ALL settings
+   - Removed hardcoded paths from all modules
+   - Auto-detects project root (no manual path editing)
+   - Configurable split-screen layout (vertical/horizontal)
+
+2. DELETED UNUSED FILES (11 files removed)
+   - main.py (old marble race factory)
+   - main_automated.py (trend-driven factory)
+   - trend_discovery.py
+   - llm_asset_query.py
+   - history_manager.py
+   - test_automation.py
+   - deep_diagnostic.py
+   - fix_llm_model.py
+   - ollama_diagnostic.py
+   - download_picture_db.py
+   - texture_manager.py
+
+3. FIXED MARBLE RACE RENDERING
+   - Now uses correct dimensions from production_config
+   - Properly sized for split-screen layout
+   - Removed hardcoded WIDTH // 2, HEIGHT // 2
+
+4. IMAGE SAFETY VALIDATION
+   - Content filtering (banned keywords)
+   - Safe search modifiers
+   - Basic image quality checks
+   - Blank/solid color rejection
+   - Copyright-conscious searches
+
+5. VIDEO COMPOSITOR IMPROVEMENTS
+   - Configurable split modes (vertical/horizontal)
+   - Better error handling
+   - Proper resource cleanup
+   - Uses production config dimensions
+
+6. BETTER ERROR HANDLING
+   - All modules have proper try/catch
+   - Clear error messages
+   - Graceful degradation
+   - Detailed logging
+
+================================================================================
+PRODUCTION-READY FILE STRUCTURE
+================================================================================
+
+MAIN ENTRY POINT:
+  main_story_mode.py          → Run this to generate videos
+
+CORE STORY MODE COMPONENTS:
+  production_config.py         → Centralized configuration (EDIT THIS)
+  story_generator.py          → LLM story generation (Ollama)
+  narration_engine.py         → TTS audio generation
+  story_visual_manager.py     → Safe image fetching
+  slideshow_generator.py      → Video slideshow assembly
+  video_compositor.py         → Split-screen composition
+
+GAME ENGINE:
+  game_logic.py               → Marble race game logic
+  physics.py                  → Physics simulation
+  effects.py                  → Visual effects & audio
+
+OPTIONAL (Publishing):
+  metadata_generator.py       → YouTube/TikTok metadata
+  youtube_uploader.py         → YouTube API uploader
+  telegram_pusher.py          → Telegram notifications
+
+LEGACY (Will be deprecated):
+  config.py                   → Old config (use production_config.py)
+  my_credentials.py           → API credentials (if needed)
+
+DATA FILES:
+  themes.json                 → Marble race themes (optional)
+  played_matches.json         → Match history (not used in story mode)
+  llm_query_cache.json        → LLM cache (optional)
+  youtube_uploads.json        → Upload tracking (optional)
+
+================================================================================
+HOW TO RUN (Production)
+================================================================================
+
+1. INSTALL DEPENDENCIES:
+   pip install opencv-python numpy pillow requests ddgs
+
+   # For TTS (choose one):
+   sudo apt install espeak-ng     # Linux (better quality)
+   pip install gtts               # Cross-platform (simpler)
+
+   # For Ollama (required):
+   curl https://ollama.ai/install.sh | sh
+   ollama pull llama3.1:latest
+
+   # For video processing:
+   # Install ffmpeg from https://ffmpeg.org/
+
+2. CONFIGURE:
+   Edit production_config.py:
+     - Set AUTO_UPLOAD = True/False
+     - Set AUTO_TELEGRAM = True/False
+     - Adjust SPLIT_MODE ("vertical" or "horizontal")
+     - Modify image safety settings if needed
+
+3. RUN:
+   python main_story_mode.py
+
+   Output: C:\AI\StoryVideo\match_recordings\
+
+4. TYPICAL OUTPUT:
+   - 20240208_143022_part1_final.mp4 (Part 1, ~65-90s)
+   - 20240208_143022_part2_final.mp4 (Part 2, ~65-90s)
+
+================================================================================
+PRODUCTION CONFIGURATION HIGHLIGHTS
+================================================================================
+
+PATHS (Auto-detected):
+  PROJECT_ROOT               → Auto-detects from script location
+  OUTPUT_DIR                 → {PROJECT_ROOT}/match_recordings
+  STORY_ASSETS_DIR           → {PROJECT_ROOT}/story_assets
+  STORY_TEMP_DIR             → {PROJECT_ROOT}/story_temp
+
+VIDEO OUTPUT:
+  OUTPUT_WIDTH = 1080        → TikTok vertical format
+  OUTPUT_HEIGHT = 1920
+  SPLIT_MODE = "vertical"    → Story top, marble bottom
+  FPS = 30
+
+STORY GENERATION:
+  OLLAMA_MODEL = "llama3.1:latest"
+  STORY_MIN_WORDS = 130
+  STORY_TARGET_WORDS = 180
+  STORY_MAX_WORDS = 280
+
+NARRATION:
+  NARRATION_MIN_DURATION = 65   → YouTube monetization minimum
+  NARRATION_MAX_DURATION = 90   → Retention optimization
+
+IMAGE SAFETY:
+  BANNED_KEYWORDS = [...]       → Content filter list
+  SAFE_SEARCH_MODIFIERS = [...]  → Force safe search
+  IMAGE_MIN_WIDTH = 400
+  IMAGE_MIN_HEIGHT = 300
+
+HUMAN-LIKE DELAYS:
+  DELAY_BEFORE_SEARCH = (2.5, 6.5)      → Anti-bot
+  DELAY_BETWEEN_DOWNLOADS = (0.8, 2.2)
+  DELAY_AFTER_PART = (6.0, 12.0)
+
+PUBLISHING:
+  AUTO_UPLOAD = False           → Set True to auto-upload to YouTube
+  AUTO_TELEGRAM = False         → Set True for Telegram notifications
+
+================================================================================
+ARCHITECTURE BENEFITS
+================================================================================
+
+✓ NO HARDCODED PATHS
+  - All paths auto-detected from project root
+  - Works on any system without editing code
+
+✓ CENTRALIZED CONFIG
+  - Single file (production_config.py) for all settings
+  - Easy to adjust for different use cases
+
+✓ SAFE IMAGE FETCHING
+  - Content filters prevent harmful images
+  - Copyright-conscious search strategies
+  - Quality validation
+
+✓ PROPER SPLIT-SCREEN
+  - Marble race + story properly sized
+  - Configurable layout (vertical/horizontal)
+  - Perfect synchronization
+
+✓ PRODUCTION-READY ERROR HANDLING
+  - Clear error messages
+  - Graceful degradation
+  - Detailed logging
+
+✓ CLEAN CODEBASE
+  - Removed 11 unused files
+  - Single entry point (main_story_mode.py)
+  - Easy to understand and maintain
+
+================================================================================
+SPLIT-SCREEN LAYOUT
+================================================================================
+
+CURRENT (Vertical Split):
+  ┌──────────────┐
+  │  SLIDESHOW   │ ← Story visuals (top half, 1080x960)
+  ├──────────────┤
+  │ MARBLE RACE  │ ← Gameplay (bottom half, 1080x960)
+  └──────────────┘
+  Total: 1080x1920 (TikTok/YouTube Shorts)
+
+TO CHANGE LAYOUT:
+  Edit production_config.py:
+    SPLIT_MODE = "horizontal"  # Side-by-side layout
+
+  Horizontal Split:
+  ┌──────┬──────┐
+  │ STORY│MARBLE│
+  │      │ RACE │
+  └──────┴──────┘
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ISSUE: "Ollama not responding"
+FIX: Start Ollama service: `ollama serve`
+
+ISSUE: "No TTS engine available"
+FIX: Install espeak-ng or gTTS (see dependencies above)
+
+ISSUE: "ffmpeg not found"
+FIX: Install ffmpeg from https://ffmpeg.org/
+
+ISSUE: "ddgs not installed"
+FIX: pip install ddgs
+
+ISSUE: Images are inappropriate
+FIX: Edit production_config.py → Add to BANNED_KEYWORDS
+
+ISSUE: Videos too short/long
+FIX: Edit production_config.py → Adjust STORY_TARGET_WORDS
+
+ISSUE: Wrong dimensions
+FIX: Edit production_config.py → Adjust OUTPUT_WIDTH/OUTPUT_HEIGHT
+
+================================================================================
+FILES TO DELETE (Optional Cleanup)
+================================================================================
+
+These files are LEGACY and can be safely deleted:
+  - config.py (replaced by production_config.py)
+  - played_matches.json (not used in story mode)
+  - llm_query_cache.json (optional cache)
+  - youtube_uploads.json (only if not uploading)
+
+================================================================================
+SUMMARY OF CHANGES
+================================================================================
+
+BEFORE (Messy):
+  - Multiple "main" files (confusing)
+  - Hardcoded paths everywhere (C:/AI/StoryVideo, /home/claude/)
+  - No image safety
+  - Wrong marble race dimensions
+  - 24 Python files (many unused)
+
+AFTER (Production-Ready):
+  - Single entry point (main_story_mode.py)
+  - Centralized config (production_config.py)
+  - Image safety validation
+  - Correct split-screen dimensions
+  - 15 Python files (all essential)
+  - Clean architecture
+  - Better error handling
+  - Proper logging
+
+================================================================================
+NEXT STEPS (Optional Enhancements)
+================================================================================
+
+1. ML-BASED IMAGE MODERATION:
+   - Integrate CLIP or similar for content safety
+   - More sophisticated copyright detection
+
+2. ADVANCED STORY GENERATION:
+   - Multiple LLM providers (OpenAI, Claude, etc.)
+   - Story templates and themes
+   - User-defined topics
+
+3. BETTER TTS:
+   - Neural TTS (ElevenLabs, etc.)
+   - Voice customization
+   - Emotion/pacing control
+
+4. AUTOMATED SCHEDULING:
+   - Cron job for regular video generation
+   - Smart trend detection
+   - Auto-publishing to multiple platforms
+
+5. ANALYTICS:
+   - Track video performance
+   - A/B testing different story types
+   - Optimize for engagement
+
+================================================================================
+END OF PRODUCTION SUMMARY
+================================================================================
+
+For questions or issues, check:
+  - production_config.py (configuration)
+  - main_story_mode.py (entry point)
+  - This file (documentation)

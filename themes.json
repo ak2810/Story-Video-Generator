@@ -1,0 +1,133 @@
+{
+  "POLITICS": [
+    {"name": "Donald Trump", "search_query": "Donald Trump face portrait", "color": [255, 50, 50]},
+    {"name": "Kamala Harris", "search_query": "Kamala Harris face portrait", "color": [0, 50, 255]},
+    {"name": "Joe Biden", "search_query": "Joe Biden face portrait", "color": [0, 48, 135]},
+    {"name": "Barack Obama", "search_query": "Barack Obama face portrait", "color": [59, 89, 152]},
+    {"name": "Bernie Sanders", "search_query": "Bernie Sanders face portrait", "color": [0, 120, 70]},
+    {"name": "Ron DeSantis", "search_query": "Ron DeSantis face portrait", "color": [200, 16, 46]},
+    {"name": "Elon Musk", "search_query": "Elon Musk face portrait", "color": [100, 100, 100]},
+    {"name": "Mark Zuckerberg", "search_query": "Mark Zuckerberg face portrait", "color": [0, 100, 220]}
+  ],
+  
+  "FOOTBALL": [
+    {"name": "Real Madrid", "search_query": "Real Madrid logo", "color": [255, 255, 255]},
+    {"name": "Barcelona", "search_query": "Barcelona FC logo", "color": [165, 0, 68]},
+    {"name": "Man United", "search_query": "Manchester United logo", "color": [218, 41, 28]},
+    {"name": "Man City", "search_query": "Manchester City logo", "color": [108, 171, 221]},
+    {"name": "Liverpool", "search_query": "Liverpool FC logo", "color": [200, 16, 46]},
+    {"name": "Bayern Munich", "search_query": "Bayern Munich logo", "color": [220, 0, 60]},
+    {"name": "PSG", "search_query": "PSG Paris logo", "color": [0, 51, 160]},
+    {"name": "Juventus", "search_query": "Juventus logo", "color": [0, 0, 0]}
+  ],
+  
+  "TECH_COMPANIES": [
+    {"name": "Apple", "search_query": "Apple logo", "color": [200, 200, 200]},
+    {"name": "Google", "search_query": "Google logo", "color": [66, 133, 244]},
+    {"name": "Microsoft", "search_query": "Microsoft logo", "color": [0, 120, 215]},
+    {"name": "Amazon", "search_query": "Amazon logo", "color": [255, 153, 0]},
+    {"name": "Meta", "search_query": "Meta Facebook logo", "color": [0, 100, 220]},
+    {"name": "Tesla", "search_query": "Tesla logo", "color": [230, 0, 0]},
+    {"name": "Netflix", "search_query": "Netflix logo", "color": [229, 9, 20]},
+    {"name": "OpenAI", "search_query": "OpenAI logo", "color": [116, 195, 194]}
+  ],
+  
+  "FAST_FOOD": [
+    {"name": "McDonald's", "search_query": "McDonald's logo", "color": [255, 188, 0]},
+    {"name": "Burger King", "search_query": "Burger King logo", "color": [218, 41, 28]},
+    {"name": "KFC", "search_query": "KFC logo", "color": [220, 0, 0]},
+    {"name": "Subway", "search_query": "Subway logo", "color": [0, 137, 64]},
+    {"name": "Taco Bell", "search_query": "Taco Bell logo", "color": [162, 0, 255]},
+    {"name": "Wendy's", "search_query": "Wendy's logo", "color": [218, 41, 28]},
+    {"name": "Pizza Hut", "search_query": "Pizza Hut logo", "color": [238, 28, 37]},
+    {"name": "Domino's", "search_query": "Domino's Pizza logo", "color": [0, 100, 220]}
+  ],
+  
+  "BEVERAGES": [
+    {"name": "Coca Cola", "search_query": "Coca Cola logo", "color": [240, 0, 0]},
+    {"name": "Pepsi", "search_query": "Pepsi logo", "color": [0, 82, 180]},
+    {"name": "Red Bull", "search_query": "Red Bull logo", "color": [0, 51, 160]},
+    {"name": "Monster", "search_query": "Monster Energy logo", "color": [0, 200, 0]},
+    {"name": "Starbucks", "search_query": "Starbucks logo", "color": [0, 112, 74]},
+    {"name": "Sprite", "search_query": "Sprite logo", "color": [0, 180, 0]},
+    {"name": "Fanta", "search_query": "Fanta logo", "color": [255, 140, 0]},
+    {"name": "Mountain Dew", "search_query": "Mountain Dew logo", "color": [150, 255, 0]}
+  ],
+  
+  "COUNTRIES": [
+    {"name": "USA", "search_query": "USA flag circle", "color": [60, 59, 110]},
+    {"name": "China", "search_query": "China flag circle", "color": [238, 28, 37]},
+    {"name": "Russia", "search_query": "Russia flag circle", "color": [213, 43, 30]},
+    {"name": "UK", "search_query": "United Kingdom flag circle", "color": [1, 33, 105]},
+    {"name": "Germany", "search_query": "Germany flag circle", "color": [0, 0, 0]},
+    {"name": "France", "search_query": "France flag circle", "color": [0, 85, 164]},
+    {"name": "Japan", "search_query": "Japan flag circle", "color": [188, 0, 45]},
+    {"name": "Brazil", "search_query": "Brazil flag circle", "color": [0, 156, 59]}
+  ],
+  
+  "CRYPTO": [
+    {"name": "Bitcoin", "search_query": "Bitcoin logo", "color": [247, 147, 26]},
+    {"name": "Ethereum", "search_query": "Ethereum logo", "color": [98, 126, 234]},
+    {"name": "Dogecoin", "search_query": "Dogecoin logo", "color": [203, 163, 56]},
+    {"name": "Cardano", "search_query": "Cardano logo", "color": [0, 51, 173]},
+    {"name": "Solana", "search_query": "Solana logo", "color": [20, 241, 149]},
+    {"name": "Ripple", "search_query": "Ripple XRP logo", "color": [35, 107, 168]},
+    {"name": "Binance", "search_query": "Binance Coin logo", "color": [240, 185, 11]},
+    {"name": "Polygon", "search_query": "Polygon MATIC logo", "color": [130, 71, 229]}
+  ],
+  
+  "SUPERHEROES": [
+    {"name": "Spider-Man", "search_query": "Spider-Man logo", "color": [220, 0, 0]},
+    {"name": "Batman", "search_query": "Batman logo", "color": [0, 0, 0]},
+    {"name": "Superman", "search_query": "Superman logo", "color": [0, 100, 220]},
+    {"name": "Iron Man", "search_query": "Iron Man logo", "color": [200, 0, 0]},
+    {"name": "Captain America", "search_query": "Captain America shield logo", "color": [0, 60, 150]},
+    {"name": "Hulk", "search_query": "Hulk logo", "color": [0, 180, 0]},
+    {"name": "Thor", "search_query": "Thor hammer logo", "color": [100, 100, 100]},
+    {"name": "Wonder Woman", "search_query": "Wonder Woman logo", "color": [220, 0, 60]}
+  ],
+  
+  "CARS": [
+    {"name": "Ferrari", "search_query": "Ferrari logo", "color": [220, 0, 0]},
+    {"name": "Lamborghini", "search_query": "Lamborghini logo", "color": [255, 215, 0]},
+    {"name": "Porsche", "search_query": "Porsche logo", "color": [0, 0, 0]},
+    {"name": "BMW", "search_query": "BMW logo", "color": [0, 100, 220]},
+    {"name": "Mercedes", "search_query": "Mercedes Benz logo", "color": [200, 200, 200]},
+    {"name": "Audi", "search_query": "Audi logo", "color": [100, 100, 100]},
+    {"name": "Tesla", "search_query": "Tesla car logo", "color": [230, 0, 0]},
+    {"name": "Ford", "search_query": "Ford logo", "color": [0, 60, 150]}
+  ],
+  
+  "GAMING": [
+    {"name": "PlayStation", "search_query": "PlayStation logo", "color": [0, 60, 150]},
+    {"name": "Xbox", "search_query": "Xbox logo", "color": [0, 180, 0]},
+    {"name": "Nintendo", "search_query": "Nintendo Switch logo", "color": [230, 0, 0]},
+    {"name": "Steam", "search_query": "Steam platform logo", "color": [0, 0, 0]},
+    {"name": "Fortnite", "search_query": "Fortnite logo", "color": [100, 50, 255]},
+    {"name": "Minecraft", "search_query": "Minecraft logo", "color": [0, 180, 0]},
+    {"name": "Call of Duty", "search_query": "Call of Duty logo", "color": [0, 0, 0]},
+    {"name": "GTA", "search_query": "GTA Grand Theft Auto logo", "color": [0, 0, 0]}
+  ],
+  
+  "SPORTS_BRANDS": [
+    {"name": "Nike", "search_query": "Nike swoosh logo", "color": [0, 0, 0]},
+    {"name": "Adidas", "search_query": "Adidas logo", "color": [0, 0, 0]},
+    {"name": "Puma", "search_query": "Puma logo", "color": [0, 0, 0]},
+    {"name": "Under Armour", "search_query": "Under Armour logo", "color": [0, 0, 0]},
+    {"name": "Reebok", "search_query": "Reebok logo", "color": [220, 0, 0]},
+    {"name": "New Balance", "search_query": "New Balance logo", "color": [220, 0, 0]},
+    {"name": "Converse", "search_query": "Converse logo", "color": [0, 0, 0]},
+    {"name": "Vans", "search_query": "Vans logo", "color": [0, 0, 0]}
+  ],
+  
+  "STREAMING": [
+    {"name": "Netflix", "search_query": "Netflix logo", "color": [229, 9, 20]},
+    {"name": "Disney+", "search_query": "Disney Plus logo", "color": [0, 60, 150]},
+    {"name": "HBO Max", "search_query": "HBO Max logo", "color": [100, 50, 200]},
+    {"name": "Prime Video", "search_query": "Amazon Prime Video logo", "color": [0, 160, 220]},
+    {"name": "YouTube", "search_query": "YouTube logo", "color": [255, 0, 0]},
+    {"name": "Hulu", "search_query": "Hulu logo", "color": [0, 230, 0]},
+    {"name": "Twitch", "search_query": "Twitch logo", "color": [145, 70, 255]},
+    {"name": "TikTok", "search_query": "TikTok logo", "color": [0, 240, 255]}
+  ]
+}

@@ -1,0 +1,221 @@
+# ============================================================================
+# AI STORY VIDEO GENERATOR - .gitignore
+# ============================================================================
+
+# ============================================================================
+# CREDENTIALS & SECRETS (CRITICAL - DO NOT COMMIT!)
+# ============================================================================
+my_credentials.py
+*credentials*.py
+*.key
+*.pem
+client_secret*.json
+.env
+.env.local
+
+# Claude Code memory/settings (local development)
+.claude/
+
+# Git metadata and auth tokens
+token.pickle
+token.json
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+storyenv/
+
+# ============================================================================
+# OUTPUT FILES & GENERATED CONTENT
+# ============================================================================
+# Video output directory
+match_recordings/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Audio files
+*.wav
+*.mp3
+*.ogg
+
+# Subtitle files
+*.srt
+*.ass
+
+# Downloaded story images
+story_assets/
+story_temp/
+
+# ============================================================================
+# PROJECT STATE & CACHE FILES
+# ============================================================================
+# Upload tracking (may contain sensitive video metadata)
+youtube_uploads.json
+
+# LLM cache (may contain prompts/API keys)
+llm_query_cache.json
+
+# Played matches tracking
+played_matches.json
+
+# ============================================================================
+# IDE & EDITOR FILES
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ============================================================================
+# OPERATING SYSTEM
+# ============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+.Trash-*
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+*.swo
+*~
+
+# FFmpeg temp files
+*.temp.mp4
+*.temp.wav
+
+# ============================================================================
+# NODE MODULES (if using any Node.js tools)
+# ============================================================================
+node_modules/
+package-lock.json
+
+# ============================================================================
+# DATABASE FILES (if any are added in future)
+# ============================================================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================================================
+# DOCUMENTATION BUILD OUTPUT
+# ============================================================================
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# ============================================================================
+# JUPYTER NOTEBOOKS (if any are added)
+# ============================================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================================================
+# MISC
+# ============================================================================
+# Compiled binaries
+*.exe
+*.dll
+*.dylib
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Reserved Windows filenames (should never exist)
+NUL
+CON
+PRN
+AUX
+COM[1-9]
+LPT[1-9]
