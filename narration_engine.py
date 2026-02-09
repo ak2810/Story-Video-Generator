@@ -1,251 +1,179 @@
 """
-narration_engine.py - TTS-based Narration Audio Generator (Production-Ready)
+narration_engine.py - Viral Audio Generator (Edge TTS Upgrade)
 
-Converts story scripts to natural-sounding narration audio.
-Audio duration is the source of truth for all video timing.
-
-PRODUCTION IMPROVEMENTS:
-- Uses centralized configuration
-- Better error handling
-- Multiple TTS engine support
+Replaces robotic gTTS/espeak with Neural storytelling voices.
+Includes built-in audio engineering (Bass Boost + Compression).
 """
 
-import subprocess
 import os
+import asyncio
+import subprocess
 import wave
+import edge_tts
 from typing import Optional
 from production_config import NARRATION_MIN_DURATION, NARRATION_MAX_DURATION
 
+# ============================================================================
+# VIRAL AUDIO CONFIGURATION
+# ============================================================================
+# "en-US-ChristopherNeural": Deep, calm, storytelling (Best for retention)
+# "en-US-GuyNeural": Energetic, news-anchor style
+VOICE = "en-US-ChristopherNeural"
+
+# Speed: +10% is the industry standard for Shorts/TikTok to keep attention
+RATE = "+10%"  
+# ============================================================================
 
 class NarrationEngine:
     """
-    Generates narration audio from story scripts using TTS.
-    Supports espeak-ng and gTTS.
+    Generates professional-grade narration using Microsoft Edge's Neural TTS.
+    Compatible drop-in replacement for the old gTTS engine.
     """
     
     def __init__(self):
-        self._verify_dependencies()
-    
-    def _verify_dependencies(self):
-        """Verify required TTS tools are available."""
-        
-        # Check for espeak-ng or piper-tts
+        print(f"  [Narration] Initialized Viral Engine (Voice: {VOICE})")
+        self._verify_ffmpeg()
+
+    def _verify_ffmpeg(self):
+        """Ensure FFmpeg is installed for audio mastering."""
         try:
-            subprocess.run(
-                ["espeak-ng", "--version"],
-                capture_output=True,
-                check=True
-            )
-            self.tts_engine = "espeak"
-            print("  [narration] Using espeak-ng for TTS")
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            # Fallback to gtts if espeak not available
-            try:
-                import gtts
-                self.tts_engine = "gtts"
-                print("  [narration] Using gTTS for narration")
-            except ImportError:
-                raise RuntimeError(
-                    "No TTS engine available. Install espeak-ng or gTTS:\n"
-                    "  Ubuntu: sudo apt install espeak-ng\n"
-                    "  Python: pip install gtts"
-                )
-    
-    def generate_narration(self, script: str, output_path: str) -> float:
+            subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            print("  [ERROR] FFmpeg not found! Audio mastering will fail.")
+
+    async def _generate_raw_async(self, text: str, output_path: str):
         """
-        Generate narration audio from script.
-        
-        Parameters
-        ----------
-        script : str
-            Full narration text
-        output_path : str
-            Path to save WAV file
-        
-        Returns
-        -------
-        float : Duration in seconds
+        Internal async wrapper to talk to the Edge TTS API.
         """
+        communicate = edge_tts.Communicate(text, VOICE, rate=RATE)
+        await communicate.save(output_path)
+
+    def _apply_audio_mastering(self, input_path: str, output_path: str):
+        """
+        Applies 'Movie Trailer' style mastering using FFmpeg:
+        1. Bass Boost (g=2) for resonance.
+        2. Treble Boost (g=1) for clarity on phones.
+        3. Compression (compand) to even out volume levels.
+        4. Silence Removal (0.2s max) to keep pacing tight.
+        """
+        # Complex filter chain for "Viral" sound
+        # - silenceremove: Trims silence > 0.2s
+        # - bass/treble: EQ
+        # - compand: Compression
+        filter_complex = (
+            "silenceremove=stop_periods=-1:stop_duration=0.2:stop_threshold=-50dB,"
+            "bass=g=2,treble=g=1,"
+            "compand=0.3|0.3:1|1:-90/-60|-60/-40|-40/-30|-20/-20:6:0:-90:0.2"
+        )
         
-        print(f"  [narration] Generating audio ({len(script)} chars, {len(script.split())} words)...")
-        
-        # Pre-check expected duration based on word count
-        word_count = len(script.split())
-        # Average speaking rate: ~2.5 words per second for TTS
-        estimated_duration = word_count / 2.5
-        
-        if estimated_duration < NARRATION_MIN_DURATION - 5:  # 5 second buffer
-            print(f"  [narration] WARN Script likely too short ({estimated_duration:.1f}s estimated)")
-            print(f"  [narration]   Recommend minimum {int(NARRATION_MIN_DURATION * 2.5)} words")
-        
-        if self.tts_engine == "espeak":
-            duration = self._generate_espeak(script, output_path)
-        else:
-            duration = self._generate_gtts(script, output_path)
-        
-        # Validate duration
-        if duration < NARRATION_MIN_DURATION:
-            print(f"  [narration] WARN Duration {duration:.1f}s below minimum {NARRATION_MIN_DURATION}s")
-            print(f"  [narration]   VIDEO MAY NOT QUALIFY FOR MONETIZATION")
-        elif duration > NARRATION_MAX_DURATION:
-            print(f"  [narration] WARN Duration {duration:.1f}s above maximum {NARRATION_MAX_DURATION}s")
-            print(f"  [narration]   Consider trimming for better retention")
-        else:
-            print(f"  [narration] OK Duration {duration:.1f}s (optimal for monetization)")
-
-        return duration
-    
-    def _generate_espeak(self, script: str, output_path: str) -> float:
-        """Generate audio using espeak-ng with DRAMATICALLY improved settings."""
-
-        # Use natural English voice with optimized dramatic settings
-        subprocess.run([
-            "espeak-ng",
-            "-v", "en-us+f4",        # US English, female voice variant 4 (most natural)
-            "-s", "155",             # Speed: 155 wpm (slower, more deliberate for suspense)
-            "-p", "45",              # Pitch: 45 (lower, more dramatic)
-            "-a", "180",             # Amplitude: 180 (clear but not harsh)
-            "-g", "15",              # Gap between words: 15ms (more suspenseful pacing)
-            "-k", "10",              # Emphasis/capitals: stronger for drama
-            "-w", output_path,       # Output WAV file
-            script
-        ], check=True, capture_output=True)
-
-        return self._get_wav_duration(output_path)
-    
-    def _generate_gtts(self, script: str, output_path: str) -> float:
-        """Generate audio using Google TTS with VIRAL STORYTELLING parameters."""
-
-        from gtts import gTTS
-
-        # GOLDEN STANDARD: 155 WPM speaking rate with natural inflections
-        # Try multiple TLDs for reliability
-        temp_mp3 = output_path.replace('.wav', '_temp.mp3')
-
-        for tld in ['com', 'co.uk', 'com.au']:
-            try:
-                # Use slow=False for baseline, will adjust speed with atempo
-                tts = gTTS(text=script, lang='en', slow=False, tld=tld)
-                tts.save(temp_mp3)
-                break
-            except Exception as e:
-                if tld == 'com.au':  # Last attempt failed
-                    raise RuntimeError(f"All gTTS attempts failed: {e}")
-                continue
-
-        # GOLDEN STANDARD AUDIO PROCESSING:
-        # - Target: 155 WPM (brisk but articulate)
-        # - Max 0.2s silence between sentences (remove dead air)
-        # - Natural inflections via reduced compression
-        subprocess.run([
+        cmd = [
             'ffmpeg', '-y',
-            '-i', temp_mp3,
-            '-ar', '24000',              # Higher sample rate for clarity
-            '-ac', '1',                  # Mono
-            '-acodec', 'pcm_s16le',      # 16-bit PCM
-            # GOLDEN STANDARD FILTERS:
-            # 1. silenceremove: Trim silence between sentences to max 0.2s
-            # 2. loudnorm: Normalize volume for consistency
-            # 3. bass/treble: Subtle warmth without over-processing
-            # 4. acompressor: Very gentle (1.5:1) to preserve natural dynamics
-            # 5. atempo: Speed to 155 WPM (~1.25x for viral pacing)
-            '-af', (
-                'silenceremove='
-                'stop_periods=-1:'           # Process all silence
-                'stop_duration=0.2:'         # Max 0.2s silence (Golden Standard)
-                'stop_threshold=-50dB,'      # Detect silence threshold
-                'loudnorm,'                  # Normalize volume
-                'bass=g=0.5,'                # Subtle bass warmth
-                'treble=g=-0.2,'             # Slight treble reduction
-                'acompressor='               # VERY gentle compression for natural feel
-                'threshold=-24dB:'           # (Simulates 35-40% stability)
-                'ratio=1.5:'
-                'attack=8:'
-                'release=100,'
-                'atempo=1.25'                # 155 WPM viral storytelling speed
-            ),
-            output_path
-        ], check=True, capture_output=True)
-
-        # Cleanup
-        if os.path.exists(temp_mp3):
-            os.remove(temp_mp3)
-
-        return self._get_wav_duration(output_path)
-    
-    def _get_wav_duration(self, wav_path: str) -> float:
-        """Get duration of WAV file in seconds."""
+            '-i', input_path,
+            '-af', filter_complex,
+            '-ar', '44100',       # Standard 44.1kHz
+            '-ac', '1',           # Mono is fine for voice
+            output_path           # FFmpeg detects .wav extension automatically
+        ]
         
+        # Run FFmpeg silently
+        try:
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"FFmpeg mastering failed: {e}")
+
+    def _get_wav_duration(self, wav_path: str) -> float:
+        """Helper to get exact duration of the final WAV file."""
         try:
             with wave.open(wav_path, 'rb') as wf:
                 frames = wf.getnframes()
                 rate = wf.getframerate()
-                duration = frames / float(rate)
-                return duration
+                return frames / float(rate)
         except Exception as e:
-            print(f"  [narration] WARN Error reading WAV duration: {e}")
+            print(f"  [Narration WARN] Could not read duration: {e}")
             return 0.0
-    
+
+    def generate_narration(self, script: str, output_path: str) -> float:
+        """
+        Main entry point called by main_story_mode.py.
+        Returns duration in seconds.
+        """
+        print(f"  [TTS] Generating viral audio ({len(script.split())} words)...")
+        
+        # Intermediate file for raw MP3
+        temp_raw = output_path.replace(".wav", "_raw.mp3")
+        
+        try:
+            # STEP 1: Generate Raw Audio (Async run in Sync context)
+            asyncio.run(self._generate_raw_async(script, temp_raw))
+            
+            # STEP 2: Apply Mastering & Convert to WAV
+            # Ensure output_path ends in .wav
+            if not output_path.endswith('.wav'):
+                output_path = output_path.rsplit('.', 1)[0] + '.wav'
+                
+            self._apply_audio_mastering(temp_raw, output_path)
+            
+            # STEP 3: Cleanup & Measure
+            if os.path.exists(temp_raw):
+                os.remove(temp_raw)
+                
+            duration = self._get_wav_duration(output_path)
+            
+            # Duration Validation (Restored from your old code)
+            if duration < NARRATION_MIN_DURATION:
+                print(f"  [Narration] WARN: Duration {duration:.1f}s is BELOW minimum {NARRATION_MIN_DURATION}s")
+                print("  [Narration]       Video may not qualify for monetization.")
+            elif duration > NARRATION_MAX_DURATION:
+                print(f"  [Narration] WARN: Duration {duration:.1f}s is ABOVE maximum {NARRATION_MAX_DURATION}s")
+                print("  [Narration]       Consider trimming script.")
+            else:
+                print(f"  [Narration] OK: Duration {duration:.1f}s (Optimal)")
+            
+            return duration
+
+        except Exception as e:
+            print(f"  [TTS ERROR] Generation failed: {e}")
+            return 0.0
+
     def adjust_script_for_duration(self, script: str, target_duration: float) -> str:
         """
-        Adjust script length to hit target duration.
-        This is a fallback - prefer writing scripts to correct length initially.
+        [COMPATIBILITY METHOD]
+        Restored so main_story_mode.py doesn't crash.
         """
-        
-        # Rough estimate: ~150 words per minute for TTS
-        # target_duration seconds -> target_words
-        words_per_second = 2.5
+        # Adjusted for +10% speed (roughly 2.6 words per second)
+        words_per_second = 2.6 
         target_words = int(target_duration * words_per_second)
         
         words = script.split()
         current_words = len(words)
         
-        if current_words > target_words * 1.1:  # 10% tolerance
-            # Too long - trim
+        if current_words > target_words * 1.1:
             trimmed = ' '.join(words[:target_words])
-            # Try to end on complete sentence
+            # Try to end on a sentence
             last_period = trimmed.rfind('.')
             if last_period > target_words * 0.8:
                 trimmed = trimmed[:last_period + 1]
-            
-            print(f"  [narration] WARN Script trimmed: {current_words} -> {len(trimmed.split())} words")
+                
+            print(f"  [Narration] Trimmed script: {current_words} -> {len(trimmed.split())} words")
             return trimmed
-        
+            
         return script
 
-
 def create_narration_engine() -> NarrationEngine:
-    """Factory function."""
+    """Factory function used by main_story_mode.py"""
     return NarrationEngine()
 
-
-# Test mode
+# ============================================================================
+# TEST BLOCK
+# ============================================================================
 if __name__ == "__main__":
-    print("=" * 70)
-    print("  NARRATION ENGINE TEST")
-    print("=" * 70)
-    
+    print("Testing Viral Audio Engine...")
     engine = create_narration_engine()
+    test_text = "This is the new viral voice engine. Notice the deep bass, the clear treble, and the natural flow. This is how you win on YouTube Shorts."
     
-    test_script = """
-    Something was terribly wrong at the research facility. Dr. Sarah Chen noticed it first.
-    The readings on her monitor showed impossible values. Equipment that had functioned
-    flawlessly for years suddenly displayed numbers that defied the laws of physics.
-    She checked the calibration. Everything was perfect. But the anomalies continued.
-    Then came the sounds. Late at night, when the building should have been completely empty,
-    footsteps echoed through the sterile corridors. Security footage revealed nothing.
-    Yet the sounds persisted, growing louder each night. On the seventh day, every sensor
-    in the building activated simultaneously. The final log entry contained just three words.
-    And then, absolute silence.
-    """
+    # Run test
+    output_file = "test_viral.wav"
+    dur = engine.generate_narration(test_text, output_file)
     
-    output = "/home/claude/test_narration.wav"
-    
-    duration = engine.generate_narration(test_script, output)
-    
-    print(f"\nOK Generated narration: {duration:.1f} seconds")
-    print(f"  File: {output}")
-    
-    if os.path.exists(output):
-        size_kb = os.path.getsize(output) / 1024
-        print(f"  Size: {size_kb:.1f} KB")
+    if os.path.exists(output_file):
+        print(f"Test complete. Created {output_file} ({dur:.2f}s)")

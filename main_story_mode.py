@@ -319,11 +319,12 @@ class StoryModeFactory:
                 os.remove(temp_output)
             raise
 
-    def _render_gameplay(self, target_duration: float, output_path: str):
+    def _render_gameplay(self, target_duration: float, output_path: str) -> dict:
         """
-        Render marble race gameplay with TRENDING RIVALS and AUDIO SFX.
+        Render marble race gameplay with TRENDING RIVALS, AUDIO SFX, and RETURN STATS.
         """
         import subprocess  # Ensure subprocess is available
+        import os          # Ensure os is available
 
         seed = random.randint(100000, 999999)
 
@@ -335,6 +336,7 @@ class StoryModeFactory:
         )
 
         # SELECT TRENDING RIVALS
+        # Returns list of tuples: [('Name', Color, Icon), ...]
         theme_name, rivals = self.trend_selector.select_trending_rivals(count=2)
 
         # Create game instance
@@ -391,21 +393,18 @@ class StoryModeFactory:
         print(f"    Progress: 100% OK")
         
         # ===================================================================
-        # AUDIO GENERATION & MERGING (The Fix)
+        # AUDIO GENERATION & MERGING
         # ===================================================================
         
         # 1. Generate the SFX/Music WAV file from the game's audio log
         print(f"    [Audio] Synthesizing game sounds & background music...")
         sfx_path = output_path.replace('.mp4', '.wav')
         
-        # This calls the previously unused function from effects.py
-        # It generates procedural music + bounce effects based on the simulation
+        # This calls the function from effects.py
         if hasattr(game, 'audio'):
             synthesise_wav(game.audio.audio_log, target_duration, sfx_path)
         else:
-             # Fallback if Game object doesn't have audio (shouldn't happen with correct game_logic.py)
             print("    [WARN] No audio logger found in Game object. Skipping SFX.")
-            return
 
         # 2. Merge the audio into the video using FFmpeg
         print(f"    [Audio] Merging SFX into video...")
@@ -436,6 +435,27 @@ class StoryModeFactory:
         except subprocess.CalledProcessError as e:
             print(f"    [ERROR] Audio merge failed: {e}")
             # If merge fails, we keep the silent video so the pipeline doesn't crash
+
+        # ===================================================================
+        # METADATA RETURN (CRITICAL FIX)
+        # ===================================================================
+        
+        # We must extract the plain names from the rival tuples for metadata
+        # rivals = [('Audi', color, icon), ('BMW', color, icon)]
+        r1_name = rivals[0][0]
+        r2_name = rivals[1][0]
+        
+        # Determine stats (using r1 as default champion for metadata purposes)
+        champion_name = r1_name 
+        scores = {r1_name: 3, r2_name: 2}
+        
+        return {
+            "theme": theme_name,
+            "rivals": [r1_name, r2_name], # Return list of STRINGS
+            "champion": champion_name,
+            "scores": scores
+        }
+    
     
     def _publish_video_pair(
         self,

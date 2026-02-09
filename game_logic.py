@@ -85,7 +85,7 @@ class Game:
             rand_bg = bg_color
 
         # --- sub-systems ---
-        self.sound      = AudioLogger()
+        self.audio      = AudioLogger()
         self.particles  = ParticleSystem()
         self.shake      = ScreenShake()
         self.background = DynamicBackground(width, height, color=rand_bg)
@@ -276,7 +276,7 @@ class Game:
                 ball.escaped    = True
                 self.round_winner = ball.team_name
                 self.scores[ball.team_name] += 1
-                self.sound.play_win(current_time=t)
+                self.audio.play_win(current_time=t)
                 self.particles.add_confetti(self.center, CONFETTI_COUNT)
                 self.shake.add_trauma(0.4)
                 break
@@ -342,7 +342,7 @@ class Game:
                                             self.center, self.frame_count)
             if result == 'gap':
                 broke = circle.take_damage()
-                self.sound.play_break(i, current_time=t)
+                self.audio.play_break(i, current_time=t)
                 burst = EXPLOSION_PARTICLES if broke else EXPLOSION_PARTICLES // 2
                 col   = circle.base_color if broke else circle.color
                 self.particles.add_explosion(ball.pos, col, burst, 1.0)
@@ -356,7 +356,7 @@ class Game:
                 ball.pos[0] += nx * COLLISION_PUSHBACK
                 ball.pos[1] += ny * COLLISION_PUSHBACK
                 ball.record_bounce(i)
-                self.sound.play_bounce(ball.get_speed_ratio(), current_time=t)
+                self.audio.play_bounce(ball.get_speed_ratio(), current_time=t)
                 self.shake.add_trauma(0.04 * ball.get_speed_ratio())
                 return True
         return False
