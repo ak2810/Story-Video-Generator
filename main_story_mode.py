@@ -319,42 +319,61 @@ class StoryModeFactory:
                 os.remove(temp_output)
             raise
 
-    def _render_gameplay(self, target_duration: float, output_path: str) -> dict:
+    def _render_gameplay(self, target_duration: float, output_path: str):
         """
-        Render marble race and return the race statistics for metadata v2.
+        Render marble race gameplay with TRENDING RIVALS and AUDIO SFX.
         """
+        import subprocess  # Ensure subprocess is available
+
         seed = random.randint(100000, 999999)
-        
-        # Random background color
-        bg_color = (random.randint(5, 25), random.randint(5, 20), random.randint(30, 60))
 
-        # SELECT TRENDING RIVALS
-        # returns list of tuples: [('Name', Color, Icon), ...]
-        theme_name, rivals = self.trend_selector.select_trending_rivals(count=2)
-
-        # Create game (Pass FULL tuples so Game gets the colors)
-        game = Game(
-            MARBLE_WIDTH, MARBLE_HEIGHT, seed,
-            theme_name=theme_name, rivals=rivals, bg_color=bg_color
+        # Random background color (dark atmospheric)
+        bg_color = (
+            random.randint(5, 25),    # R: Low
+            random.randint(5, 20),    # G: Very low
+            random.randint(30, 60)    # B: Higher (blue tint)
         )
 
+        # SELECT TRENDING RIVALS
+        theme_name, rivals = self.trend_selector.select_trending_rivals(count=2)
+
+        # Create game instance
+        game = Game(
+            MARBLE_WIDTH,
+            MARBLE_HEIGHT,
+            seed,
+            theme_name=theme_name,
+            rivals=rivals,
+            bg_color=bg_color
+        )
+
+        # Calculate target frames
         target_frames = int(target_duration * FPS)
-        
+
         # Setup video writer
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_path, fourcc, FPS, (MARBLE_WIDTH, MARBLE_HEIGHT))
+        writer = cv2.VideoWriter(
+            output_path,
+            fourcc,
+            FPS,
+            (MARBLE_WIDTH, MARBLE_HEIGHT)
+        )
+
+        if not writer.isOpened():
+            raise RuntimeError(f"Failed to open video writer: {output_path}")
 
         frame_count = 0
-        print(f"    Rendering marble race: {target_duration:.1f}s")
+        print(f"    Rendering marble race: {target_duration:.1f}s ({target_frames} frames)")
 
         while frame_count < target_frames:
+            # Render frame
             frame = np.zeros((MARBLE_HEIGHT, MARBLE_WIDTH, 3), dtype=np.uint8)
 
             if not game.is_done():
                 game.update()
                 game.draw(frame)
             else:
-                # Animation after finish
+                # Game ended early - keep rendering last state with animation
                 game.background.update()
                 game.background.draw(frame)
                 game.particles.update()
@@ -363,24 +382,60 @@ class StoryModeFactory:
             writer.write(frame)
             frame_count += 1
 
+            # Progress indicator
+            if frame_count % (FPS * 5) == 0:
+                progress = (frame_count / target_frames) * 100
+                print(f"    Progress: {progress:.0f}%", end='\r')
+
         writer.release()
+        print(f"    Progress: 100% OK")
         
-        # --- EXTRACT NAMES FOR METADATA ---
-        # Rival tuples look like: ('Audi', (255,0,0), 'icon_path')
-        # We need to extract just the string names [0]
-        r1_name = rivals[0][0]
-        r2_name = rivals[1][0]
+        # ===================================================================
+        # AUDIO GENERATION & MERGING (The Fix)
+        # ===================================================================
         
-        # Mock scores/winner using just the names
-        champion_name = r1_name 
-        scores = {r1_name: 3, r2_name: 2}
+        # 1. Generate the SFX/Music WAV file from the game's audio log
+        print(f"    [Audio] Synthesizing game sounds & background music...")
+        sfx_path = output_path.replace('.mp4', '.wav')
         
-        return {
-            "theme": theme_name,
-            "rivals": [r1_name, r2_name], # <--- Now returning list of STRINGS
-            "champion": champion_name,    # <--- Now returning STRING
-            "scores": scores
-        }
+        # This calls the previously unused function from effects.py
+        # It generates procedural music + bounce effects based on the simulation
+        if hasattr(game, 'audio'):
+            synthesise_wav(game.audio.audio_log, target_duration, sfx_path)
+        else:
+             # Fallback if Game object doesn't have audio (shouldn't happen with correct game_logic.py)
+            print("    [WARN] No audio logger found in Game object. Skipping SFX.")
+            return
+
+        # 2. Merge the audio into the video using FFmpeg
+        print(f"    [Audio] Merging SFX into video...")
+        temp_video = output_path.replace('.mp4', '_temp.mp4')
+        
+        try:
+            subprocess.run([
+                'ffmpeg', '-y',
+                '-i', output_path,     # The silent video we just rendered
+                '-i', sfx_path,        # The audio we just generated
+                '-c:v', 'copy',        # Copy video (don't re-encode, super fast)
+                '-c:a', 'aac',         # Encode audio to AAC
+                '-shortest',           # Ensure lengths match
+                temp_video
+            ], check=True, capture_output=True)
+            
+            # 3. Swap the files
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            os.rename(temp_video, output_path)
+            
+            # 4. Clean up the WAV file
+            if os.path.exists(sfx_path):
+                os.remove(sfx_path)
+                
+            print(f"    [Audio] Merge complete.")
+            
+        except subprocess.CalledProcessError as e:
+            print(f"    [ERROR] Audio merge failed: {e}")
+            # If merge fails, we keep the silent video so the pipeline doesn't crash
     
     def _publish_video_pair(
         self,
